@@ -1,0 +1,41 @@
+name: Validate action
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2.5.1
+        with:
+          node-version: 16.x
+      - run: |
+          npm install
+      - run: |
+          npm run all
+
+  test-setup-publish:
+    name: Test setup + publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: clarity-st/setup@v1
+      - name: Create zip
+        run: |
+          zip -j tmp.zip README.md
+      - name: Publish
+        uses: ./
+        with:
+          api-token: ${{ secrets.CLARITY_API_TOKEN }}
+          service: github-action-publish
+          path: tmp.zip
